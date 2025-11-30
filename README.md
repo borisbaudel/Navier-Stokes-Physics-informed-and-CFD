@@ -1,116 +1,96 @@
 # Navier–Stokes — Physics-Informed & Multi-Fidelity Neural Networks
 
 This repository explores **data-driven modeling for Navier–Stokes / CFD** using a **Multi-Fidelity Neural Network (MFNN)**.  
-The objective is to learn an accurate approximation of a **high-fidelity CFD solution** by combining:
-
-- **Low-fidelity** data (coarse solver, simplified physics),
-- **High-fidelity** data (reference solution),
-- Neural networks capable of fusing both.
-
-This approach is inspired by modern **physics-informed** and **multi-fidelity** strategies used in scientific machine learning.
+The objective is to combine **low-fidelity** and **high-fidelity** data to learn an accurate surrogate of a CFD solution.
 
 ---
 
-## 🚀 1. Algorithms Implemented
+## 1. Objective
 
-### 1.1 Multi-Fidelity Neural Network (MFNN)
-
-The MFNN implemented in `MFNN.py` is trained on:
-
-- low-fidelity data \( (x, y_{\text{low}}) \)
-- high-fidelity data \( (x, y_{\text{high}}) \)
-
-It learns to approximate:
+The MFNN learns the mappings:
 
 $$
-x \;\mapsto\; \hat{y}_{\text{low}}(x), \qquad
-x \;\mapsto\; \hat{y}_{\text{high}}(x)
+x \mapsto \hat{y}_{\text{low}}(x)
+$$
+
+$$
+x \mapsto \hat{y}_{\text{high}}(x)
 $$
 
 ---
 
-### 🧠 a) Network Architecture
+## 2. Network Architecture
 
-The MFNN consists of:
+The MFNN consists of three components.
 
-1. **Shared feature extractor**  
-   Produces a latent representation:
-   $$
-   z(x) = f_{\theta}(x)
-   $$
+### 2.1 Shared feature extractor
+Produces a latent representation:
 
-2. **Low-fidelity head**
-   $$
-   \hat{y}_{\text{low}} = g_{\theta_{\text{low}}}(z)
-   $$
+$$
+z(x) = f_{\theta}(x)
+$$
 
-3. **High-fidelity correction head**
-   $$
-   \hat{y}_{\text{high}} = h_{\theta_{\text{high}}}(z,\, \hat{y}_{\text{low}})
-   $$
+### 2.2 Low-fidelity head
 
-The high-fidelity branch reuses learned information from the low-fidelity approximation.
+$$
+\hat{y}_{\text{low}} = g_{\theta_{\text{low}}}(z)
+$$
+
+### 2.3 High-fidelity correction head
+
+$$
+\hat{y}_{\text{high}} = h_{\theta_{\text{high}}}(z,\, \hat{y}_{\text{low}})
+$$
+
+The high-fidelity branch reuses information learned from the low-fidelity data.
 
 ---
 
-### 📉 b) Multi-fidelity loss function
+## 3. Multi-fidelity Loss Function
 
-The total loss is the weighted sum of both fidelity levels:
+The total loss is the weighted sum:
 
 $$
 \mathcal{L}
-= \lambda_{\text{low}}\,\mathrm{MSE}\!\left(\hat{y}_{\text{low}},\, y_{\text{low}}\right)
-+ \lambda_{\text{high}}\,\mathrm{MSE}\!\left(\hat{y}_{\text{high}},\, y_{\text{high}}\right)
+= \lambda_{\text{low}}\,\mathrm{MSE}(\hat{y}_{\text{low}},\, y_{\text{low}})
++ \lambda_{\text{high}}\,\mathrm{MSE}(\hat{y}_{\text{high}},\, y_{\text{high}})
 $$
 
-- \( \lambda_{\text{low}}, \lambda_{\text{high}} \) weight the influence of each fidelity level.  
-- The network learns a **good low-fidelity model**, then **corrects** it using high-fidelity data.
+Where:
+
+- \( \lambda_{\text{low}} \) and \( \lambda_{\text{high}} \) control the influence of each fidelity level.  
+- The model learns a **good low-fidelity approximation**, then **refines it** using high-fidelity data.
 
 ---
 
-### ⚙️ c) Optimization
+## 4. Data Included
 
-Training uses:
-
-- **Adam optimizer**
-- Combined batches of low- and high-fidelity samples
-- Optional learning rate scheduling
-- Model saved as `model.pth`
-
----
-
-## 📂 2. Data Structure
-
-The repository contains:
-
-- `y_l.dat` → Low-fidelity data  
-- `y_h.dat` → High-fidelity data  
-- `y_test.dat` → Test set  
-- `mfdata.mat`, `mfdata2.mat`, `Copy_of_mfdata.mat` → MATLAB datasets
+- `y_l.dat` — Low-fidelity data  
+- `y_h.dat` — High-fidelity data  
+- `y_test.dat` — Test data  
+- `mfdata.mat`, `mfdata2.mat` — MATLAB datasets  
 
 Workflow:
 
-1. Load data  
-2. Normalize inputs/outputs  
+1. Load datasets  
+2. Normalize input/output (optional)  
 3. Train MFNN  
-4. Evaluate on `y_test.dat`  
-5. Compare low, high, and MFNN predictions  
+4. Evaluate on test data  
 
 ---
 
-## 📊 3. Visualizations
+## 5. Visualizations
 
-Included plots:
+The repository contains figures:
 
-- **True function** (`true function.png`)
-- **Low-fidelity model** (`low.jpg`)
-- **High-fidelity model** (`high.jpg`)
-- **MFNN predictions** (`prediction.png`)
-- Training history / comparisons (`150000epoch_500low_10high.png`, `Our.png`)
+- low-fidelity vs high-fidelity  
+- MFNN predictions  
+- true function reference  
+- training evolution  
 
-These show how the MFNN refines the low-fidelity approximation.
+These illustrate the refinement from LF → HF → MFNN.
 
 ---
 
-## 📁 4. Repository Structure
+## 6. Repository Structure
 
