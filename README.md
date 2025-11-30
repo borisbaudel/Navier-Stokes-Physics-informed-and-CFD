@@ -1,134 +1,116 @@
-# Navier-Stokes – Physics-Informed and CFD (Multi-Fidelity Neural Network)
+# Navier–Stokes — Physics-Informed & Multi-Fidelity Neural Networks
 
-This repository explores **data-driven modeling for CFD / Navier–Stokes problems** using a **multi-fidelity neural network (MFNN)**.  
-The goal is to learn an accurate surrogate of a high-fidelity CFD solution by combining:
+This repository explores **data-driven modeling for Navier–Stokes / CFD** using a **Multi-Fidelity Neural Network (MFNN)**.  
+The objective is to learn an accurate approximation of a **high-fidelity CFD solution** by combining:
 
-- Cheap **low-fidelity** data (coarse simulations / simplified models), and  
-- Expensive **high-fidelity** data (fine CFD / reference solution).
+- **Low-fidelity** data (coarse solver, simplified physics),
+- **High-fidelity** data (reference solution),
+- Neural networks capable of fusing both.
 
-The approach is inspired by **physics-informed** and **multi-fidelity** learning strategies frequently used in fluid dynamics and scientific machine learning.
+This approach is inspired by modern **physics-informed** and **multi-fidelity** strategies used in scientific machine learning.
 
 ---
 
-## 1. Algorithms Implemented
+## 🚀 1. Algorithms Implemented
 
 ### 1.1 Multi-Fidelity Neural Network (MFNN)
 
-The core of the repository is `MFNN.py`, which implements a **multi-fidelity regression model** using a feed-forward neural network (PyTorch).
+The MFNN implemented in `MFNN.py` is trained on:
 
-The idea is to learn a mapping
-\[
-x \mapsto y_{\text{low}}(x), \quad x \mapsto y_{\text{high}}(x)
-\]
-where:
+- low-fidelity data \( (x, y_{\text{low}}) \)
+- high-fidelity data \( (x, y_{\text{high}}) \)
 
-- \( y_{\text{low}} \) comes from **low-fidelity data** (cheap approximation of the solution),
-- \( y_{\text{high}} \) comes from **high-fidelity data** (expensive CFD / reference solution).
+It learns to approximate:
 
-The MFNN uses both datasets jointly during training.
-
-#### a) Network architecture
-
-Conceptually, the model can be seen as:
-
-1. A **shared feature extractor**:
-   - Fully-connected layers with non-linear activations
-   - Encodes the input \( x \) into a latent representation \( z(x) \).
-
-2. A **low-fidelity head**:
-   - Takes \( z(x) \) and outputs a prediction \(\hat{y}_{\text{low}}(x)\).
-
-3. A **high-fidelity head**:
-   - Uses \( z(x) \) *and* information about \( \hat{y}_{\text{low}}(x) \) (either explicitly or implicitly through shared weights)  
-   - Outputs \(\hat{y}_{\text{high}}(x)\), which should approximate the true high-fidelity solution.
-
-This structure allows the network to **reuse what it learns from cheap low-fidelity data** to improve the prediction of the expensive high-fidelity solution.
-
-#### b) Multi-fidelity loss function
-
-The loss combines the errors on both levels:
-
-\[
-\mathcal{L} = \lambda_{\text{low}} \, \text{MSE}\big( \hat{y}_{\text{low}}, y_{\text{low}} \big)
-            + \lambda_{\text{high}} \, \text{MSE}\big( \hat{y}_{\text{high}}, y_{\text{high}} \big)
-\]
-
-- \( \lambda_{\text{low}}, \lambda_{\text{high}} \) weight the contribution of each fidelity level.
-- This encourages the network to:
-  - Learn a **good approximation of the low-fidelity model**, and
-  - Correct / refine it to match the **high-fidelity target**.
-
-Depending on the experiment, the loss can also be extended with:
-
-- Regularization terms (weight decay, L2 on parameters),
-- Physics-inspired penalties (e.g. enforcing smoothness or known constraints),
-- Test errors on unseen points (`y_test.dat`) for evaluation.
-
-#### c) Optimization
-
-Training typically uses standard **stochastic gradient-based optimization**, e.g.:
-
-- Optimizer: Adam / SGD with momentum,
-- Mini-batch training on mixed low- and high-fidelity samples,
-- Learning rate scheduling (optional).
-
-The training loop iterates over the data until convergence and saves the trained weights in `model.pth`.
+$$
+x \;\mapsto\; \hat{y}_{\text{low}}(x), \qquad
+x \;\mapsto\; \hat{y}_{\text{high}}(x)
+$$
 
 ---
 
-## 2. Data Handling
+### 🧠 a) Network Architecture
 
-The repository includes several data files:
+The MFNN consists of:
 
-- `y_l.dat` : low-fidelity data (inputs / outputs),
-- `y_h.dat` : high-fidelity data,
-- `y_test.dat` : test data for evaluating generalization,
-- `mfdata.mat`, `mfdata2.mat`, `Copy_of_mfdata.mat` : MATLAB data files containing low- and high-fidelity datasets.
+1. **Shared feature extractor**  
+   Produces a latent representation:
+   $$
+   z(x) = f_{\theta}(x)
+   $$
 
-Typical workflow:
+2. **Low-fidelity head**
+   $$
+   \hat{y}_{\text{low}} = g_{\theta_{\text{low}}}(z)
+   $$
 
-1. **Load the data** from `.dat` or `.mat` files.
-2. **Split** into training and test sets.
-3. **Normalize / scale** inputs and outputs (if needed).
-4. **Train** the MFNN on low- and high-fidelity data.
-5. **Evaluate** on `y_test.dat` and compare predictions to the true function.
+3. **High-fidelity correction head**
+   $$
+   \hat{y}_{\text{high}} = h_{\theta_{\text{high}}}(z,\, \hat{y}_{\text{low}})
+   $$
 
----
-
-## 3. Visualization
-
-To analyze the performance of the MFNN, the repository contains several plots:
-
-- `true function.png`, `true_500pts.jpg` – reference / “true” target function,
-- `prediction.png` – MFNN prediction after training,
-- `low.jpg`, `low_500pts.jpg` – low-fidelity solution,
-- `high.jpg`, `high_500pts.jpg` – high-fidelity solution,
-- `150000epoch_500low_10high.png`, `Our.png` – training results and comparison between methods.
-
-These figures illustrate:
-
-- How the low-fidelity model deviates from the true function,
-- How the high-fidelity data corrects it,
-- How the MFNN combines both to approximate the true solution.
+The high-fidelity branch reuses learned information from the low-fidelity approximation.
 
 ---
 
-## 4. Repository Structure
+### 📉 b) Multi-fidelity loss function
 
-```text
-.
-├── MFNN.py                # Multi-Fidelity Neural Network implementation (PyTorch)
-├── model.pth              # Trained model weights
-├── y_l.dat                # Low-fidelity dataset
-├── y_h.dat                # High-fidelity dataset
-├── y_test.dat             # Test dataset
-├── mfdata.mat             # MATLAB multi-fidelity data
-├── mfdata2.mat
-├── Copy_of_mfdata.mat
-├── true function.png      # Reference “true” function
-├── prediction.png         # MFNN predictions
-├── low.jpg / high.jpg     # Low- and high-fidelity solutions
-├── *_500pts.jpg           # Same, sampled on 500 points
-├── 150000epoch_500low_10high.png
-├── Our.png
-└── README.md              # This file
+The total loss is the weighted sum of both fidelity levels:
+
+$$
+\mathcal{L}
+= \lambda_{\text{low}}\,\mathrm{MSE}\!\left(\hat{y}_{\text{low}},\, y_{\text{low}}\right)
++ \lambda_{\text{high}}\,\mathrm{MSE}\!\left(\hat{y}_{\text{high}},\, y_{\text{high}}\right)
+$$
+
+- \( \lambda_{\text{low}}, \lambda_{\text{high}} \) weight the influence of each fidelity level.  
+- The network learns a **good low-fidelity model**, then **corrects** it using high-fidelity data.
+
+---
+
+### ⚙️ c) Optimization
+
+Training uses:
+
+- **Adam optimizer**
+- Combined batches of low- and high-fidelity samples
+- Optional learning rate scheduling
+- Model saved as `model.pth`
+
+---
+
+## 📂 2. Data Structure
+
+The repository contains:
+
+- `y_l.dat` → Low-fidelity data  
+- `y_h.dat` → High-fidelity data  
+- `y_test.dat` → Test set  
+- `mfdata.mat`, `mfdata2.mat`, `Copy_of_mfdata.mat` → MATLAB datasets
+
+Workflow:
+
+1. Load data  
+2. Normalize inputs/outputs  
+3. Train MFNN  
+4. Evaluate on `y_test.dat`  
+5. Compare low, high, and MFNN predictions  
+
+---
+
+## 📊 3. Visualizations
+
+Included plots:
+
+- **True function** (`true function.png`)
+- **Low-fidelity model** (`low.jpg`)
+- **High-fidelity model** (`high.jpg`)
+- **MFNN predictions** (`prediction.png`)
+- Training history / comparisons (`150000epoch_500low_10high.png`, `Our.png`)
+
+These show how the MFNN refines the low-fidelity approximation.
+
+---
+
+## 📁 4. Repository Structure
+
