@@ -72,13 +72,7 @@ This sharing mechanism is what makes the network *multi-fidelity*.
 The network is trained using a weighted MSE loss:
 
 $$
-\mathcal{L}
-=
-\lambda_{\mathrm{low}}\,
-\mathrm{MSE}\!\left(\hat{y}_{\mathrm{low}},\, y_{\mathrm{low}}\right)
-+
-\lambda_{\mathrm{high}}\,
-\mathrm{MSE}\!\left(\hat{y}_{\mathrm{high}},\, y_{\mathrm{high}}\right)
+\mathcal{L} = \lambda_{\mathrm{low}}\, \mathrm{MSE}\!\left(\hat{y}_{\mathrm{low}},\, y_{\mathrm{low}}\right) + \lambda_{\mathrm{high}}\,  \mathrm{MSE}\!\left(\hat{y}_{\mathrm{high}},\,y_{\mathrm{high}}\right)
 $$
 
 Where:
