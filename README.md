@@ -42,28 +42,26 @@ The MFNN contains three main components:
 
 ### 1️⃣ Shared Feature Extractor
 Transforms the input into a latent space:
-
-\[
-z(x) = f_{\theta}(x)
-\]
+$$
+z(x)=f_{\theta}(x)
+$$
 
 ---
 
 ### 2️⃣ Low-Fidelity Head
-Predicts the coarse approximation:
+Predicts the coarse approximation:ù
 
-\[
-\hat{y}_{\text{low}} = g_{\theta_{\text{low}}}(z)
-\]
-
+$$
+\hat{y}_{\mathrm{low}} = g_{\theta_{\mathrm{low}}}\!\left(z\right)
+$$
 ---
 
 ### 3️⃣ High-Fidelity Correction Head
 Refines the prediction using both the latent space and the LF estimate:
 
-\[
-\hat{y}_{\text{high}} = h_{\theta_{\text{high}}}(z,\,\hat{y}_{\text{low}})
-\]
+$$
+\hat{y}_{\mathrm{high}} = h_{\theta_{\mathrm{high}}}\!\left(z,\,\hat{y}_{\mathrm{low}}\right)
+$$
 
 This sharing mechanism is what makes the network *multi-fidelity*.
 
@@ -73,11 +71,15 @@ This sharing mechanism is what makes the network *multi-fidelity*.
 
 The network is trained using a weighted MSE loss:
 
-\[
+$$
 \mathcal{L}
-= \lambda_{\text{low}}\,\mathrm{MSE}(\hat{y}_{\text{low}},\, y_{\text{low}})
-+ \lambda_{\text{high}}\,\mathrm{MSE}(\hat{y}_{\text{high}},\, y_{\text{high}})
-\]
+=
+\lambda_{\mathrm{low}}\,
+\mathrm{MSE}\!\left(\hat{y}_{\mathrm{low}},\, y_{\mathrm{low}}\right)
++
+\lambda_{\mathrm{high}}\,
+\mathrm{MSE}\!\left(\hat{y}_{\mathrm{high}},\, y_{\mathrm{high}}\right)
+$$
 
 Where:
 
