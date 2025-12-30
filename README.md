@@ -1,96 +1,127 @@
 # Navier–Stokes — Physics-Informed & Multi-Fidelity Neural Networks
 
-This repository explores **data-driven modeling for Navier–Stokes / CFD** using a **Multi-Fidelity Neural Network (MFNN)**.  
-The objective is to combine **low-fidelity** and **high-fidelity** data to learn an accurate surrogate of a CFD solution.
+This repository explores **data-driven modeling for Navier–Stokes / CFD** using a **Multi-Fidelity Neural Network (MFNN)**.
+
+The goal is to combine **cheap, low-fidelity CFD data** with **expensive, high-fidelity data** to learn an accurate surrogate model — improving prediction quality while reducing simulation cost.
 
 ---
 
-## 1. Objective
+## 🔍 Motivation
 
-The MFNN learns the mappings:
+Classical CFD solvers are accurate but computationally expensive.  
+Low-fidelity solvers are faster, but introduce bias.
 
-$$
+👉 A **Multi-Fidelity Neural Network** leverages *both*:
+
+- **Low-fidelity data** → captures global structure  
+- **High-fidelity data** → corrects local errors  
+
+This approach is highly relevant for **surrogate modeling, optimization, digital twins, and engineering design**.
+
+---
+
+## 🎯 Objective
+
+We learn two mappings from inputs \(x\):
+
+\[
 x \mapsto \hat{y}_{\text{low}}(x)
-$$
+\]
 
-$$
+\[
 x \mapsto \hat{y}_{\text{high}}(x)
-$$
+\]
+
+The high-fidelity network **reuses information** from the low-fidelity model.
 
 ---
 
-## 2. Network Architecture
+## 🧠 Model Architecture
 
-The MFNN consists of three components.
+The MFNN contains three main components:
 
-### 2.1 Shared feature extractor
-Produces a latent representation:
+### 1️⃣ Shared Feature Extractor
+Transforms the input into a latent space:
 
-$$
+\[
 z(x) = f_{\theta}(x)
-$$
-
-### 2.2 Low-fidelity head
-
-$$
-\hat{y}_{\text{low}} = g_{\theta_{\text{low}}}(z)
-$$
-
-### 2.3 High-fidelity correction head
-
-$$
-\hat{y}_{\text{high}} = h_{\theta_{\text{high}}}(z,\, \hat{y}_{\text{low}})
-$$
-
-The high-fidelity branch reuses information learned from the low-fidelity data.
+\]
 
 ---
 
-## 3. Multi-fidelity Loss Function
+### 2️⃣ Low-Fidelity Head
+Predicts the coarse approximation:
 
-The total loss is the weighted sum:
+\[
+\hat{y}_{\text{low}} = g_{\theta_{\text{low}}}(z)
+\]
 
-$$
+---
+
+### 3️⃣ High-Fidelity Correction Head
+Refines the prediction using both the latent space and the LF estimate:
+
+\[
+\hat{y}_{\text{high}} = h_{\theta_{\text{high}}}(z,\,\hat{y}_{\text{low}})
+\]
+
+This sharing mechanism is what makes the network *multi-fidelity*.
+
+---
+
+## 📉 Loss Function
+
+The network is trained using a weighted MSE loss:
+
+\[
 \mathcal{L}
 = \lambda_{\text{low}}\,\mathrm{MSE}(\hat{y}_{\text{low}},\, y_{\text{low}})
 + \lambda_{\text{high}}\,\mathrm{MSE}(\hat{y}_{\text{high}},\, y_{\text{high}})
-$$
+\]
 
 Where:
 
-- \( \lambda_{\text{low}} \) and \( \lambda_{\text{high}} \) control the influence of each fidelity level.  
-- The model learns a **good low-fidelity approximation**, then **refines it** using high-fidelity data.
+- \( \lambda_{\text{low}} \) — weight of LF data  
+- \( \lambda_{\text{high}} \) — weight of HF data  
+
+Training proceeds such that the model first learns a **good low-fidelity approximation**, and then **refines it** with high-fidelity supervision.
 
 ---
 
-## 4. Data Included
+## 📂 Dataset
+
+Included files:
 
 - `y_l.dat` — Low-fidelity data  
 - `y_h.dat` — High-fidelity data  
-- `y_test.dat` — Test data  
-- `mfdata.mat`, `mfdata2.mat` — MATLAB datasets  
+- `y_test.dat` — Test dataset  
+- `mfdata.mat`, `mfdata2.mat` — MATLAB multi-fidelity datasets  
 
-Workflow:
+Typical workflow:
 
 1. Load datasets  
-2. Normalize input/output (optional)  
+2. (Optional) Normalize inputs/outputs  
 3. Train MFNN  
-4. Evaluate on test data  
+4. Evaluate against test data  
 
 ---
 
-## 5. Visualizations
+## 📊 Visualizations
 
-The repository contains figures:
+The repository includes figures comparing:
 
-- low-fidelity vs high-fidelity  
-- MFNN predictions  
-- true function reference  
-- training evolution  
+✔ Low-fidelity vs. high-fidelity  
+✔ MFNN predictions vs. ground truth  
+✔ Error distributions  
+✔ Training evolution  
 
-These illustrate the refinement from LF → HF → MFNN.
+These illustrate how the network progressively improves from:
+
+**Low-Fidelity → High-Fidelity → Multi-Fidelity**
+
+> If you run the notebooks/scripts, figures are automatically generated.
 
 ---
 
-## 6. Repository Structure
+## 📁 Repository Structure
 
