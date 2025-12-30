@@ -24,13 +24,13 @@ This approach is highly relevant for **surrogate modeling, optimization, digital
 
 We learn two mappings from inputs \(x\):
 
-\[
-x \mapsto \hat{y}_{\text{low}}(x)
-\]
+$$
+x \mapsto \hat{y}_{\mathrm{low}}(x)
+$$
 
-\[
-x \mapsto \hat{y}_{\text{high}}(x)
-\]
+$$
+x \mapsto \hat{y}_{\mathrm{high}}(x)
+$$
 
 The high-fidelity network **reuses information** from the low-fidelity model.
 
