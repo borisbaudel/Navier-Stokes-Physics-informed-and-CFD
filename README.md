@@ -4,8 +4,6 @@ This repository explores **data-driven modeling for Navier–Stokes / CFD** usin
 
 The goal is to combine **cheap, low-fidelity CFD data** with **expensive, high-fidelity data** to learn an accurate surrogate model — improving prediction quality while reducing simulation cost.
 
----
-
 ## 🔍 Motivation
 
 Classical CFD solvers are accurate but computationally expensive.  
@@ -17,8 +15,6 @@ Low-fidelity solvers are faster, but introduce bias.
 - **High-fidelity data** → corrects local errors  
 
 This approach is highly relevant for **surrogate modeling, optimization, digital twins, and engineering design**.
-
----
 
 ## 🎯 Objective
 
@@ -34,8 +30,6 @@ $$
 
 The high-fidelity network **reuses information** from the low-fidelity model.
 
----
-
 ## 🧠 Model Architecture
 
 The MFNN contains three main components:
@@ -46,7 +40,6 @@ $$
 z(x)=f_{\theta}(x)
 $$
 
----
 
 ### 2️⃣ Low-Fidelity Head
 Predicts the coarse approximation:ù
@@ -54,7 +47,6 @@ Predicts the coarse approximation:ù
 $$
 \hat{y}_{\mathrm{low}} = g_{\theta_{\mathrm{low}}}\!\left(z\right)
 $$
----
 
 ### 3️⃣ High-Fidelity Correction Head
 Refines the prediction using both the latent space and the LF estimate:
@@ -64,8 +56,6 @@ $$
 $$
 
 This sharing mechanism is what makes the network *multi-fidelity*.
-
----
 
 ## 📉 Loss Function
 
@@ -81,8 +71,6 @@ Where:
 - \( \lambda_{\text{high}} \) — weight of HF data  
 
 Training proceeds such that the model first learns a **good low-fidelity approximation**, and then **refines it** with high-fidelity supervision.
-
----
 
 ## 📂 Dataset
 
